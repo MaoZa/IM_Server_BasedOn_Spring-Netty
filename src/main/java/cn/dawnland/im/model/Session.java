@@ -8,11 +8,11 @@ public class Session {
     // 用户唯一性标识
     private String userId;
     
-    private String userName;
+    private String nickname;
 
-    public Session(String userId, String userName) {
+    public Session(String userId, String nickname) {
         this.userId = userId;
-        this.userName = userName;
+        this.nickname = nickname;
     }
 
     public Session() {

@@ -26,7 +26,10 @@ public class CreateGroupRequestHandler extends SimpleChannelInboundHandler<Creat
     protected void messageReceived(ChannelHandlerContext channelHandlerContext, CreateGroupRequestPacket createGroupRequestPacket) throws Exception {
         List<String> userIdList = createGroupRequestPacket.getUserIdList();
         userIdList.add(SessionUtil.getSession(channelHandlerContext.channel()).getUserId());
-        List<String> userNameList = new ArrayList<>();
+        if(userIdList.indexOf(SessionUtil.getSession(channelHandlerContext.channel()).getUserId()) != -1){
+            userIdList.remove(SessionUtil.getSession(channelHandlerContext.channel()).getUserId());
+        }
+        List<String> nicknameList = new ArrayList<>();
         // 1. 创建一个 channel 分组
         ChannelGroup channelGroup = new DefaultChannelGroup(channelHandlerContext.executor());
 
@@ -35,7 +38,7 @@ public class CreateGroupRequestHandler extends SimpleChannelInboundHandler<Creat
             Channel channel = SessionUtil.getChannel(userId);
             if (channel != null) {
                 channelGroup.add(channel);
-                userNameList.add(SessionUtil.getSession(channel).getUserName());
+                nicknameList.add(SessionUtil.getSession(channel).getNickname());
             }
         }
 
@@ -43,7 +46,7 @@ public class CreateGroupRequestHandler extends SimpleChannelInboundHandler<Creat
         CreateGroupResponsePacket createGroupResponsePacket = new CreateGroupResponsePacket();
         createGroupResponsePacket.setSuccess(true);
         createGroupResponsePacket.setGroupId(IDUtil.randomId());
-        createGroupResponsePacket.setUserNameList(userNameList);
+        createGroupResponsePacket.setUserNameList(nicknameList);
 
         SessionUtil.bindChannelGroup(createGroupResponsePacket.getGroupId(), channelGroup);
 
