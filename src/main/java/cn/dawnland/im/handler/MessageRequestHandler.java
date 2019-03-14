@@ -8,16 +8,14 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import org.springframework.stereotype.Component;
 
 /**
  * @author Cap_Sub
  */
 @ChannelHandler.Sharable
+@Component
 public class MessageRequestHandler extends SimpleChannelInboundHandler<MessageRequestPacket> {
-
-    public static final MessageRequestHandler INSTANCE = new MessageRequestHandler();
-
-    protected MessageRequestHandler() { }
 
     @Override
     protected void messageReceived(ChannelHandlerContext channelHandlerContext, MessageRequestPacket messageRequestPacket) throws Exception {

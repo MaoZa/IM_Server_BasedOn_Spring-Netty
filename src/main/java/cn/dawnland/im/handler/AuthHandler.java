@@ -4,8 +4,10 @@ import cn.dawnland.im.utils.LoginUtil;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import org.springframework.stereotype.Component;
 
 @ChannelHandler.Sharable
+@Component
 public class AuthHandler extends ChannelInboundHandlerAdapter {
 
     public static final AuthHandler INSTANCE = new AuthHandler();

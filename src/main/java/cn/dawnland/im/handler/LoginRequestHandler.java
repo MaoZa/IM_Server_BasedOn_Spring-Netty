@@ -4,6 +4,8 @@ import cn.dawnland.im.command.PacketCodeC;
 import cn.dawnland.im.command.packet.LoginRequestPacket;
 import cn.dawnland.im.command.packet.LoginResponsePacket;
 import cn.dawnland.im.model.Session;
+import cn.dawnland.im.model.User;
+import cn.dawnland.im.service.UserService;
 import cn.dawnland.im.utils.IDUtil;
 import cn.dawnland.im.utils.LoginUtil;
 import cn.dawnland.im.utils.SessionUtil;
@@ -11,54 +13,69 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  * @author Cap_Sub
  */
 @ChannelHandler.Sharable
+@Component
 public class LoginRequestHandler extends SimpleChannelInboundHandler<LoginRequestPacket> {
 
-    public static final LoginRequestHandler INSTANCE = new LoginRequestHandler();
+    private Logger logger = LoggerFactory.getLogger(LoginRequestHandler.class);
 
-    protected LoginRequestHandler() { }
+    @Autowired
+    private UserService userService;
 
     @Override
     protected void messageReceived(ChannelHandlerContext channelHandlerContext, LoginRequestPacket loginRequestPacket) throws Exception {
         /**
          * 登录校验
          */
-        LoginResponsePacket loginResponsePacket = new LoginResponsePacket();
-        loginResponsePacket.setVersion(loginRequestPacket.getVersion());
-        if (valid(loginRequestPacket)) {
-            loginResponsePacket.setSuccess(true);
-            String userId = IDUtil.randomUserId();
-            loginResponsePacket.setUserId(userId);
-            SessionUtil.bindSession(new Session(userId, loginRequestPacket.getUsername()), channelHandlerContext.channel());
+        LoginResponsePacket valid = valid(loginRequestPacket);
+        valid.setVersion(loginRequestPacket.getVersion());
+        if (valid.getSuccess()) {
+            SessionUtil.bindSession(new Session(valid.getUserId() + "", loginRequestPacket.getEmail()), channelHandlerContext.channel());
             LoginUtil.markAsLogin(channelHandlerContext.channel());
-            System.out.print("[" + loginRequestPacket.getUsername() + "]登录成功");
-            System.out.println("[userId]" + loginResponsePacket.getUserId());
+            logger.info("[" + loginRequestPacket.getEmail() + "]登录成功" + "[userId]" + valid.getUserId());
         } else {
-            loginResponsePacket.setReason("账号密码校验失败");
-            loginResponsePacket.setSuccess(false);
-            System.out.println("[" + loginRequestPacket.getUsername() + "]登录失败");
+            System.out.println("[" + loginRequestPacket.getEmail() + "]登录失败");
         }
         // 编码
-        ByteBuf responseByteBuf = PacketCodeC.INSTANCE.encode(channelHandlerContext.alloc(), loginResponsePacket);
-        channelHandlerContext.channel().writeAndFlush(responseByteBuf);
+        ByteBuf responseByteBuf = PacketCodeC.INSTANCE.encode(channelHandlerContext.alloc(), valid);
+        channelHandlerContext.channel().writeAndFlush(valid);
     }
 
-    // 用户断线之后取消绑定
+    /**
+     * 用户断线之后取消绑定
+     * @param ctx
+     */
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
         System.out.println("用户下线，取消Map绑定");
         SessionUtil.unBindSession(ctx.channel());
     }
 
-    private boolean valid(LoginRequestPacket loginRequestPacket) {
-        if(loginRequestPacket.getUsername().equals("Cap_Sub") && loginRequestPacket.getPassword().equals("123456")){
-            return true;
+    private LoginResponsePacket valid(LoginRequestPacket loginRequestPacket) {
+        User user = userService.selectByParams(null, loginRequestPacket.getEmail(), null);
+        LoginResponsePacket loginResponsePacket = new LoginResponsePacket();
+        if(user == null){
+            loginResponsePacket.setSuccess(false);
+            loginResponsePacket.setReason("登录失败,邮箱不存在");
+        }else{
+            if(user.getPassword().equals(loginRequestPacket.getPassword())){
+                loginResponsePacket.setSuccess(true);
+                loginResponsePacket.setReason("登录成功");
+                loginResponsePacket.setUserId(user.getUid() + "");
+            }else{
+                loginResponsePacket.setSuccess(false);
+                loginResponsePacket.setReason("登录失败,密码错误");
+            }
         }
-        return false;
+        return loginResponsePacket;
     }
 
 }

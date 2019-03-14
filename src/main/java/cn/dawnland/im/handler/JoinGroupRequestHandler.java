@@ -7,16 +7,14 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.group.ChannelGroup;
+import org.springframework.stereotype.Component;
 
 /**
  * @author Cap_Sub
  */
 @ChannelHandler.Sharable
+@Component
 public class JoinGroupRequestHandler extends SimpleChannelInboundHandler<JoinGroupRequestPacket> {
-
-    public static final JoinGroupRequestHandler INSTANCE = new JoinGroupRequestHandler();
-
-    protected JoinGroupRequestHandler() { }
 
     @Override
     protected void messageReceived(ChannelHandlerContext channelHandlerContext, JoinGroupRequestPacket joinGroupRequestPacket) throws Exception {

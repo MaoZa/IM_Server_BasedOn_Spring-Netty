@@ -5,10 +5,12 @@ import cn.dawnland.im.command.PacketCodeC;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
+import org.springframework.stereotype.Component;
 
 /**
  * @author Cap_Sub
  */
+@Component
 public class PacketEncoder extends MessageToByteEncoder<Packet> {
 
     @Override

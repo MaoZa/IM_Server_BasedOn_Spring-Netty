@@ -8,11 +8,9 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -41,9 +39,10 @@ public class NettyConfig {
 
     @Value("${so.backlog}")
     private int backlog;
-    @Autowired
-    @Qualifier("springProtocolInitializer")
-    private StringProtocolInitalizer protocolInitalizer;
+
+    @Autowired private StringProtocolInitalizer stringProtocolInitalizer;
+    @Autowired PacketDecoder packetDecoder;
+    @Autowired PacketEncoder packetEncoder;
 
     @SuppressWarnings("unchecked")
     @Bean(name = "serverBootstrap")
@@ -71,7 +70,7 @@ public class NettyConfig {
                 /**
                  * 这里主要就是定义后续每条连接的数据读写，业务处理逻辑
                  */
-                .childHandler(protocolInitalizer)
+                .childHandler(stringProtocolInitalizer)
                 /**
                  * 设置开启TCP心跳
                  */
@@ -116,14 +115,12 @@ public class NettyConfig {
         return options;
     }
 
-    @Bean(name = "packetEncoder")
     public PacketEncoder packetEncoder() {
-        return new PacketEncoder();
+        return packetEncoder;
     }
 
-    @Bean(name = "packetDecoder")
     public PacketDecoder packetDecoder() {
-        return new PacketDecoder();
+        return packetDecoder;
     }
 
     /**

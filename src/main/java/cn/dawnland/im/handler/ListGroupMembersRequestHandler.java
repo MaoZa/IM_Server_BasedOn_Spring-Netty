@@ -9,6 +9,7 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.group.ChannelGroup;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,11 +18,8 @@ import java.util.List;
  * @author Cap_Sub
  */
 @ChannelHandler.Sharable
+@Component
 public class ListGroupMembersRequestHandler extends SimpleChannelInboundHandler<ListGroupMembersRequestPacket> {
-
-    public static final ListGroupMembersRequestHandler INSTANCE = new ListGroupMembersRequestHandler();
-
-    protected ListGroupMembersRequestHandler() { }
 
     @Override
     protected void messageReceived(ChannelHandlerContext channelHandlerContext, ListGroupMembersRequestPacket listGroupMembersRequestPacket) throws Exception {

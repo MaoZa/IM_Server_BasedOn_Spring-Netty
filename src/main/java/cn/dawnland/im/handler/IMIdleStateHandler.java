@@ -1,8 +1,10 @@
 package cn.dawnland.im.handler;
 
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.IdleStateHandler;
+import org.springframework.stereotype.Component;
 
 import java.util.concurrent.TimeUnit;
 
