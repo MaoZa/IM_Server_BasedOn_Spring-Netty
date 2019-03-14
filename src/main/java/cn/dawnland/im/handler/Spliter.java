@@ -8,6 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
+
 /**
  * @author Cap_Sub
  */
@@ -22,18 +24,17 @@ public class Spliter extends LengthFieldBasedFrameDecoder {
     }
 
     @Override
-    protected Object decode(ChannelHandlerContext ctx, ByteBuf in) throws Exception {
-        // 屏蔽非本协议的客户端
-        try{
+    protected Object decode(ChannelHandlerContext ctx, ByteBuf in) {
+        try {
+            // 屏蔽非本协议的客户端
             if (in.getInt(in.readerIndex()) != PacketCodeC.MAGIC_NUMBER) {
                 ctx.channel().close();
                 return null;
             }
-        }
-        catch (Exception e){
+            return super.decode(ctx, in);
+        } catch (Exception e) {
             logger.error("Spliter异常[]" + e.getMessage());
         }
-
-        return super.decode(ctx, in);
+        return null;
     }
 }
